@@ -40,14 +40,16 @@ class AdminController {
 	async getProductById(req, res, next) {}
 
 	async createNewProduct(req, res, next) {
-		const { productName, productPrice, isDiscount, discountPercents, productImage, productCategory } = req.body;
+		const { productName, productPrice, isDiscount, discountPercents, productCategory } = req.body;
+		const fileName = req.file.filename;
+		console.log("🚀 ~ AdminController ~ createNewProduct ~ file:", fileName);
 
 		const checkRequired = [
 			!productName && "productName",
 			!productPrice && "productPrice",
 			isDiscount === undefined && "isDiscount",
+			!fileName && "productImage",
 			!discountPercents && "discountPercents",
-			!productImage && "productImage",
 			!productCategory && "productCategory",
 		].filter((item) => item);
 
@@ -64,7 +66,7 @@ class AdminController {
 			productPrice,
 			isDiscount,
 			discountPercents,
-			productImage,
+			productImage: `/images/${fileName}`,
 			productCategory,
 		});
 
@@ -73,36 +75,36 @@ class AdminController {
 		return res.status(201).json({
 			status: "success",
 		});
-		// 	{
-		// 		productName: "Smartphone",
-		// 		productPrice: 599,
-		// 		isDiscount: true,
-		// 		discountPercents: 10,
-		// 		productImage: "smartphone.jpg",
-		// 		productColor: "#000",
-		// 		productCategory: "Electronics",
-		// 		productReviews: [
-		// 			{
-		// 				userName: "user1",
-		// 				reviewContent: "Great phone!",
-		// 				reviewStar: 5,
-		// 			},
-		// 			{
-		// 				userName: "user2",
-		// 				reviewContent: "Works well, but battery life could be better.",
-		// 				reviewStar: 4,
-		// 			},
-		// 		],
-		// 		productComments: [
-		// 			{
-		// 				userName: "user3",
-		// 				commentContent: "I agree with user2, the battery life could be improved.",
-		// 			},
-		// 		],
-		// 		productRating: 4.5,
-		// 		productStock: 100,
-		// 		isDeleted: false,
-		// 	},
+		// {
+		// 	productName: "Smartphone",
+		// 	productPrice: 599,
+		// 	isDiscount: true,
+		// 	discountPercents: 10,
+		// 	productImage: "smartphone.jpg",
+		// 	productColor: "#000",
+		// 	productCategory: "Electronics",
+		// 	productReviews: [
+		// 		{
+		// 			userName: "user1",
+		// 			reviewContent: "Great phone!",
+		// 			reviewStar: 5,
+		// 		},
+		// 		{
+		// 			userName: "user2",
+		// 			reviewContent: "Works well, but battery life could be better.",
+		// 			reviewStar: 4,
+		// 		},
+		// 	],
+		// 	productComments: [
+		// 		{
+		// 			userName: "user3",
+		// 			commentContent: "I agree with user2, the battery life could be improved.",
+		// 		},
+		// 	],
+		// 	productRating: 4.5,
+		// 	productStock: 100,
+		// 	isDeleted: false,
+		// },
 	}
 
 	async handlePutProduct(req, res, next) {}
