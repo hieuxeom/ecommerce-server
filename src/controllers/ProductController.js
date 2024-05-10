@@ -1,22 +1,84 @@
+const ProductModel = require("../models/ProductModel"); // Assuming the schema is in a file named ProductModel.js
 class AdminController {
-	async handleGetProduct(res, req, next) {}
+	constructor() {
+		this.handleGetProduct = this.handleGetProduct.bind(this);
+	}
 
-	async getAllProducts(res, req, next) {}
+	async handleGetProduct(req, res, next) {
+		const { _s } = req.query;
 
-	async getProductsBySearchKey(res, req, next) {}
+		if (_s) {
+			this.getProductsBySearchKey(_s, res);
+		} else {
+			this.getAllProducts(res);
+		}
+	}
 
-	// async getProductsByCategory(res, req, next) {}0
-	async getProductById(res, req, next) {}
+	async getAllProducts(res) {
+		const listProductData = await ProductModel.find({});
 
-	async createNewProduct(res, req, next) {}
+		return res.status(200).json({
+			status: "success get",
+			data: listProductData,
+		});
+	}
 
-	async handlePutProduct(res, req, next) {}
+	async getProductsBySearchKey(_s, res) {
+		const listProductData = await ProductModel.find({
+			productName: {
+				$regex: new RegExp(_s, "i"),
+			},
+		});
 
-	async editProduct(res, req, next) {}
+		return res.status(200).json({
+			status: "success search",
+			data: listProductData,
+		});
+	}
 
-	async softDeleteProduct(res, req, next) {}
+	// async getProductsByCategory(req, res, next) {}0
+	async getProductById(req, res, next) {}
 
-	async removeProduct(res, req, next) {}
+	async createNewProduct(req, res, next) {
+		// 	{
+		// 		productName: "Smartphone",
+		// 		productPrice: 599,
+		// 		isDiscount: true,
+		// 		discountPercents: 10,
+		// 		productImage: "smartphone.jpg",
+		// 		productColor: "#000",
+		// 		productCategory: "Electronics",
+		// 		productReviews: [
+		// 			{
+		// 				userName: "user1",
+		// 				reviewContent: "Great phone!",
+		// 				reviewStar: 5,
+		// 			},
+		// 			{
+		// 				userName: "user2",
+		// 				reviewContent: "Works well, but battery life could be better.",
+		// 				reviewStar: 4,
+		// 			},
+		// 		],
+		// 		productComments: [
+		// 			{
+		// 				userName: "user3",
+		// 				commentContent: "I agree with user2, the battery life could be improved.",
+		// 			},
+		// 		],
+		// 		productRating: 4.5,
+		// 		productStock: 100,
+		// 		isDeleted: false,
+		// 	},
+	}
+
+	async handlePutProduct(req, res, next) {}
+
+	async editProduct(req, res, next) {}
+
+	async softDeleteProduct(req, res, next) {}
+
+	async removeProduct(req, res, next) {}
 }
 
 module.exports = new AdminController();
