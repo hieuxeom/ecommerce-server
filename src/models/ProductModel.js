@@ -28,7 +28,7 @@ const ProductModel = new Schema(
 		productName: { type: String, required: true },
 		productPrice: { type: Number, required: true },
 		isDiscount: { type: Boolean, default: false },
-		discountPercents: { type: Number, default: 0 },
+		discountPercents: { type: Number, default: 1, min: 1, max: 100 },
 		productImage: { type: String, required: true },
 		productColor: { type: String, default: "#000" },
 		productCategory: {

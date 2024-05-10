@@ -40,6 +40,39 @@ class AdminController {
 	async getProductById(req, res, next) {}
 
 	async createNewProduct(req, res, next) {
+		const { productName, productPrice, isDiscount, discountPercents, productImage, productCategory } = req.body;
+
+		const checkRequired = [
+			!productName && "productName",
+			!productPrice && "productPrice",
+			isDiscount === undefined && "isDiscount",
+			!discountPercents && "discountPercents",
+			!productImage && "productImage",
+			!productCategory && "productCategory",
+		].filter((item) => item);
+
+		if (checkRequired.length > 0) {
+			return res.status(404).json({
+				status: "failure",
+				message: "Missing some required fields, please fill all required fields before submitting",
+				missingFields: checkRequired,
+			});
+		}
+
+		const newProduct = new ProductModel({
+			productName,
+			productPrice,
+			isDiscount,
+			discountPercents,
+			productImage,
+			productCategory,
+		});
+
+		await newProduct.save();
+
+		return res.status(201).json({
+			status: "success",
+		});
 		// 	{
 		// 		productName: "Smartphone",
 		// 		productPrice: 599,
