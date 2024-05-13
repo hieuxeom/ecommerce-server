@@ -1,6 +1,8 @@
 const CategoryModel = require("../models/CategoryModel"); // Assuming the schema is in a file named ProductModel.js
 class CategoryController {
-	constructor() {}
+	constructor() {
+		this.getCategoryById = this.getCategoryById.bind(this);
+	}
 
 	async getAllCategories(req, res, next) {
 		const listCategories = await CategoryModel.find({});
@@ -12,7 +14,23 @@ class CategoryController {
 		});
 	}
 
-	async getCategoryById(req, res, next) {}
+	async getCategoryById(req, res, next) {
+		const { categoryId } = req.params;
+
+		if (!categoryId) {
+			return this.getAllCategories(req, res, next);
+		}
+
+		const categoryData = await CategoryModel.find({
+			_id: categoryId,
+		});
+
+		return res.status(200).json({
+			status: "success",
+			message: "",
+			data: categoryData,
+		});
+	}
 
 	async createNewCategory(req, res, next) {
 		const { categoryName } = req.body;
