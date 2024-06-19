@@ -30,7 +30,14 @@ class OrderController {
                 })
             }
 
-            const listOrders = await OrderModel.find().sort({
+            const filterOptions = {};
+            const { filter }  = req.query;
+
+            if (filter) {
+                filterOptions.orderStatus = filter
+            }
+
+            const listOrders = await OrderModel.find(filterOptions).sort({
                 orderDate: -1,
             });
 
@@ -218,6 +225,57 @@ class OrderController {
                 message: err.message
             })
         }
+    }
+
+    async updateAllOrdersStatus(req, res, next) {
+
+        const token = req.headers.authorization.split(" ")[1];
+        console.log(token)
+        if (!token) {
+            return res.status(400).json({
+                status: "error",
+                message: "JWT Token not found",
+            });
+        }
+
+        try {
+            const {role} = decodeToken(token);
+
+            if (role !== 1) {
+                return res.status(403).json({
+                    status: "error",
+                    message: "You don't have permission to access this resource"
+                })
+            }
+
+            const  {fromStatus, toStatus} = req.body;
+
+            console.log('vcl', fromStatus, toStatus)
+
+            await OrderModel.updateMany({
+                orderStatus: fromStatus,
+            }, {
+                orderStatus: toStatus,
+            })
+
+            return res.status(201).json({
+                status: "success",
+                message: "Order created successfully",
+            });
+        } catch (err) {
+            if (err.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    status: "error",
+                    message: "Token is expired ",
+                });
+            }
+
+            return res.status(500).json({
+                status: "error",
+                message: err.message,
+            });
+        }
+
     }
 }
 

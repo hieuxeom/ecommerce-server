@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../angular-ecommerce/.idea/angular-ecommerce.iml" filepath="$PROJECT_DIR$/../angular-ecommerce/.idea/angular-ecommerce.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/ecommerce-server.iml" filepath="$PROJECT_DIR$/.idea/ecommerce-server.iml" />
     </modules>
   </component>

@@ -1,7 +1,7 @@
 const ProductModel = require("../models/ProductModel"); // Assuming the schema is in a file named ProductModel.js
 
 const fs = require("fs")
-const {decodeToken} = require("../utils/token");
+const { decodeToken } = require("../utils/token");
 
 class ProductController {
     constructor() {
@@ -11,7 +11,7 @@ class ProductController {
 
     async handleGetProduct(req, res, next) {
 
-        const {filter, min, max, isFull} = req.query;
+        const { filter, min, max, isFull } = req.query;
 
         console.log();
 
@@ -26,7 +26,7 @@ class ProductController {
         }
 
         if (min && max) {
-            filterOptions.productPrice = {$gte: min, $lte: max}
+            filterOptions.productPrice = { $gte: min, $lte: max }
         }
 
         const listProducts = await ProductModel.find(filterOptions);
@@ -37,15 +37,6 @@ class ProductController {
             data: listProducts
         })
 
-        // const {_s, filter} = req.query;
-        //
-        // if (_s) {
-        //     await this.getProductsBySearchKey(_s, res);
-        // } else if (filter) {
-        //     await this.getProductsByFilter(filter, res);
-        // } else {
-        //     await this.getAllProducts(res);
-        // }
     }
 
     async getAllProducts(res) {
@@ -94,7 +85,7 @@ class ProductController {
 
     // async getProductsByCategory(req, res, next) {}0
     async getProductById(req, res, next) {
-        const {productId} = req.params
+        const { productId } = req.params
 
         if (!productId) {
             return this.getAllProducts();
@@ -143,7 +134,7 @@ class ProductController {
         }
 
         try {
-            const {role} = decodeToken(token);
+            const { role } = decodeToken(token);
 
             if (role !== 1) {
                 return res.status(403).json({
@@ -236,114 +227,82 @@ class ProductController {
     }
 
     async editProduct(req, res, next) {
-        const token = req.headers.authorization.split(" ")[1];
 
-        if (!token) {
-            return res.status(400).json({
-                status: "error",
-                message: "JWT Token not found",
+        const {
+            productId,
+            productName,
+            productImage,
+            productPrice,
+            isDiscount,
+            discountPercents,
+            productStock,
+            productCategory,
+            isActive
+        } = req.body;
+
+        const checkRequired = [
+            !productName && "productName",
+            !productPrice && "productPrice",
+            isDiscount === undefined && "isDiscount",
+            isDiscount && !discountPercents && "discountPercents",
+            !productStock && "productStock",
+            !productCategory && "productCategory",
+
+        ].filter((item) => item);
+
+        if (checkRequired.length > 0) {
+            return res.status(404).json({
+                status: "failure",
+                message: "Missing some required fields, please fill all required fields before submitting",
+                missingFields: checkRequired,
             });
         }
 
-        try {
-            const {role} = decodeToken(token);
+        let fileName = '';
+        if (productImage) {
+            const imageDirectory = './public/images/';
 
-            if (role !== 1) {
-                return res.status(403).json({
-                    status: "error",
-                    message: "You don't have permission to access this resource"
-                })
-            }
+            let parseImageExt = productImage.split(';')[0].split('/')[1];
 
-            const {
-                productId,
-                productName,
-                productImage,
-                productPrice,
-                isDiscount,
-                discountPercents,
-                productStock,
-                productCategory,
-                isActive
-            } = req.body;
+            const imageExt = parseImageExt === "jpeg" ? "jpg" : parseImageExt;
+            fileName = Date.now() + '.' + imageExt;
 
-            const checkRequired = [
-                !productName && "productName",
-                !productPrice && "productPrice",
-                isDiscount === undefined && "isDiscount",
-                isDiscount && !discountPercents && "discountPercents",
-                !productStock && "productStock",
-                !productCategory && "productCategory",
+            const base64data = productImage.replace(/^data:.*,/, '');
 
-            ].filter((item) => item);
-
-            if (checkRequired.length > 0) {
-                return res.status(404).json({
-                    status: "failure",
-                    message: "Missing some required fields, please fill all required fields before submitting",
-                    missingFields: checkRequired,
-                });
-            }
-
-            let fileName = '';
-            if (productImage) {
-                const imageDirectory = './public/images/';
-
-                let parseImageExt = productImage.split(';')[0].split('/')[1];
-
-                const imageExt = parseImageExt === "jpeg" ? "jpg" : parseImageExt;
-                fileName = Date.now() + '.' + imageExt;
-
-                const base64data = productImage.replace(/^data:.*,/, '');
-
-                fs.writeFile(imageDirectory + fileName, base64data, 'base64', (err) => {
-                    if (err) {
-                        console.log(err);
-                        res.json({
-                            status: 'error',
-                            message: err.name
-                        })
-                    }
-                });
-            }
-
-            let updateData = {
-                productName,
-                productPrice,
-                isDiscount,
-                discountPercents,
-                productStock,
-                productCategory,
-                isActive
-            }
-
-            if (productImage) {
-                updateData = {
-                    ...updateData,
-                    productImage: `/images/${fileName}`,
+            fs.writeFile(imageDirectory + fileName, base64data, 'base64', (err) => {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        status: 'error',
+                        message: err.name
+                    })
                 }
-            }
-
-            await ProductModel.findByIdAndUpdate(productId, updateData);
-
-            return res.status(201).json({
-                status: "success",
-                message: 'Successfully edited product details'
             });
-
-        } catch (err) {
-            if (err.name === "TokenExpiredError") {
-                return res.status(401).json({
-                    status: "error",
-                    message: "Token is expired ",
-                });
-            }
-
-            return res.status(500).json({
-                status: "error",
-                message: err.message
-            })
         }
+
+        let updateData = {
+            productName,
+            productPrice,
+            isDiscount,
+            discountPercents,
+            productStock,
+            productCategory,
+            isActive
+        }
+
+        if (productImage) {
+            updateData = {
+                ...updateData,
+                productImage: `/images/${fileName}`,
+            }
+        }
+
+        await ProductModel.findByIdAndUpdate(productId, req.body);
+
+        return res.status(201).json({
+            status: "success",
+            message: 'Successfully edited product details'
+        });
     }
 
     async deactivateProduct(req, res, next) {
@@ -357,7 +316,7 @@ class ProductController {
         }
 
         try {
-            const {role} = decodeToken(token);
+            const { role } = decodeToken(token);
 
             if (role !== 1) {
                 return res.status(403).json({
@@ -366,7 +325,7 @@ class ProductController {
                 })
             }
 
-            const {productId} = req.body;
+            const { productId } = req.body;
 
             await ProductModel.findByIdAndUpdate(productId, {
                 isActive: 0
@@ -402,7 +361,7 @@ class ProductController {
         }
 
         try {
-            const {role} = decodeToken(token);
+            const { role } = decodeToken(token);
 
             if (role !== 1) {
                 return res.status(403).json({
@@ -411,7 +370,7 @@ class ProductController {
                 })
             }
 
-            const {productId} = req.body;
+            const { productId } = req.body;
 
             await ProductModel.findByIdAndUpdate(productId, {
                 isActive: 1
@@ -448,7 +407,7 @@ class ProductController {
         }
 
         try {
-            const {role} = decodeToken(token);
+            const { role } = decodeToken(token);
 
             if (role !== 1) {
                 return res.status(403).json({
@@ -457,7 +416,7 @@ class ProductController {
                 })
             }
 
-            const {productId} = req.params;
+            const { productId } = req.params;
 
             await ProductModel.findByIdAndDelete(productId);
 
@@ -498,7 +457,7 @@ class ProductController {
         try {
             const newArrivalsProduct = await ProductModel.find({
                 isActive: true
-            }).sort({'createdAt': -1}).limit(4);
+            }).sort({ 'createdAt': -1 }).limit(4);
             return res.status(200).json({
                 status: 'success',
                 message: 'Successfully get new arrival products',
@@ -516,7 +475,7 @@ class ProductController {
         try {
             const topSells = await ProductModel.find({
                 isActive: true
-            }).sort({'soldCount': -1}).limit(4);
+            }).sort({ 'soldCount': -1 }).limit(4);
             return res.status(200).json({
                 status: 'success',
                 message: 'Successfully get new arrival products',
@@ -532,7 +491,7 @@ class ProductController {
 
     async increaseProductView(req, res, next) {
         try {
-            const {productId} = req.params;
+            const { productId } = req.params;
 
             await ProductModel.findByIdAndUpdate(productId, {
                     $inc: {

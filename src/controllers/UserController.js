@@ -186,6 +186,7 @@ class UserController {
         try {
 
             const refreshToken = req.headers["x-rftk"];
+            console.log(refreshToken)
             const {_id} = decodeToken(refreshToken);
 
             const userData = await UserModel.findById(_id);
