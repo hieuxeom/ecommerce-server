@@ -10,7 +10,8 @@ var app = require("../app");
 var debug = require("debug")("ecommerce-server:server");
 var http = require("http");
 
-const mongoDb = require("../src/utils/mongodb.js");
+const mongoDb = require("../src/utils/mongodb");
+
 mongoDb.connect();
 
 /**

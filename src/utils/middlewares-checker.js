@@ -1,26 +1,33 @@
-const { decodeToken } = require("./token");
+const {decodeToken} = require("./token");
 
 function checkToken(req, res, next) {
-    const token = req.headers.authorization.split(" ")[1];
-
-    if (!token) {
-        return res.status(400).json({
-            status: "error",
-            message: "JWT Token not found",
-        });
-    }
-
     try {
-        decodeToken(token);
-        next()
-    } catch (err) {
-        if (err.name === "TokenExpiredError") {
-            return res.status(401).json({
+        const token = req.headers.authorization.split(" ")[1];
+        console.log(token)
+        if (!token) {
+            return res.status(400).json({
                 status: "error",
-                message: "Token is expired ",
+                message: "JWT Token not found",
             });
         }
 
+        try {
+            decodeToken(token);
+            next()
+        } catch (err) {
+            if (err.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    status: "error",
+                    message: "Token is expired ",
+                });
+            }
+            return res.status(500).json({
+                status: "error",
+                message: err.message
+            })
+
+        }
+    } catch (err) {
         return res.status(500).json({
             status: "error",
             message: err.message
@@ -39,7 +46,7 @@ function checkAdminRole(req, res, next) {
     }
 
     try {
-        const { role } = decodeToken(token);
+        const {role} = decodeToken(token);
 
         if (role !== 1) {
             return res.status(403).json({
@@ -68,5 +75,5 @@ function checkAdminRole(req, res, next) {
 
 module.exports = {
     checkAdminRole,
-     checkToken
+    checkToken
 }

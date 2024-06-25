@@ -25,9 +25,9 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.set('view engine', 'jade');
 
-var apiRouter = require("./src/routes/apiRouter");
+var apiV1Router = require("./src/routes/apiRouter");
 
-app.use("/api", apiRouter);
+app.use("/api", apiV1Router);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
